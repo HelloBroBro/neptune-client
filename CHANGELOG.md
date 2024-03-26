@@ -1,4 +1,22 @@
-## [UNRELEASED] neptune 1.10.0
+## [UNRELEASED] neptune 2.0.0
+
+### Breaking changes
+- Deleted `neptune.new` package ([#1684](https://github.com/neptune-ai/neptune-client/pull/1684))
+- Deleted `neptune.legacy` package ([#1685](https://github.com/neptune-ai/neptune-client/pull/1685))
+- Deleted `neptune.common` package ([#1693](https://github.com/neptune-ai/neptune-client/pull/1693))
+([#1690](https://github.com/neptune-ai/neptune-client/pull/1690))
+- Renamed `metadata_containers` to `objects` ([#1696](https://github.com/neptune-ai/neptune-client/pull/1696))
+- Removed `neptune-client` ([#1699](https://github.com/neptune-ai/neptune-client/pull/1699))
+- Deleted `neptune.logging` package ([#1698](https://github.com/neptune-ai/neptune-client/pull/1698))
+- Disabled `Model` ([#1701](https://github.com/neptune-ai/neptune-client/pull/1701))
+- Disabled `ModelVersion` ([#1701](https://github.com/neptune-ai/neptune-client/pull/1708))
+- Disabled `Project` ([#1709](https://github.com/neptune-ai/neptune-client/pull/1709))
+
+### Features
+- ?
+
+
+## neptune 1.10.0
 
 ### Features
 - Added `get_workspace_status()` method to management API ([#1662](https://github.com/neptune-ai/neptune-client/pull/1662))
@@ -10,6 +28,7 @@
 ### Fixes
 - Restored support for SSL verification exception ([#1661](https://github.com/neptune-ai/neptune-client/pull/1661))
 - Allow user to control logging level ([#1679](https://github.com/neptune-ai/neptune-client/pull/1679))
+- Fix sending data with forked container ([#1692](https://github.com/neptune-ai/neptune-client/pull/1692))
 
 ### Changes
 - Improve dependency installation checking ([#1670](https://github.com/neptune-ai/neptune-client/pull/1670))
@@ -17,8 +36,6 @@
 - Improve datetime parsing in `fetch_*_table()` ([#1680](https://github.com/neptune-ai/neptune-client/pull/1680))
 - Remove deprecation warning in `fetch_runs_table()` ([#1686](https://github.com/neptune-ai/neptune-client/pull/1686))
 - Make sleep dur in some e2e tests consistent (#[1700](https://github.com/neptune-ai/neptune-client/pull/1700))
-
-### Changes
 - Minor updates to made package compatible with Python 3.11 and 3.12 ([#1678](https://github.com/neptune-ai/neptune-client/pull/1678))
 
 

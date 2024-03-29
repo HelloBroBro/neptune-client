@@ -34,10 +34,6 @@ from typing import (
 from neptune.internal.init.parameters import DEFAULT_STOP_TIMEOUT
 from neptune.internal.types.stringify_value import StringifyValue
 from neptune.internal.utils.logger import get_logger
-from neptune.internal.utils.runningmode import (
-    in_interactive,
-    in_notebook,
-)
 from neptune.typing import (
     AbstractNeptuneObject,
     ProgressBarCallback,
@@ -115,12 +111,8 @@ class TqdmProgressBar(ProgressBarCallback):
         **kwargs: Any,
     ) -> None:
         super().__init__(*args, **kwargs)
-        interactive = in_interactive() or in_notebook()
 
-        if interactive:
-            from tqdm.notebook import tqdm
-        else:
-            from tqdm import tqdm  # type: ignore
+        from tqdm.auto import tqdm
 
         unit = unit if unit else ""
 

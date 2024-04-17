@@ -178,6 +178,7 @@ class TestBaseAssign:
             assert exp["ns"][5].fetch() == 7
 
 
+@pytest.mark.xfail(reason="File functionality disabled", strict=True, raises=NeptuneUnsupportedFunctionalityException)
 class TestUpload:
     @classmethod
     def setUpClass(cls) -> None:
@@ -234,6 +235,7 @@ class TestSeries:
         os.environ[PROJECT_ENV_NAME] = "organization/project"
         os.environ[API_TOKEN_ENV_NAME] = ANONYMOUS_API_TOKEN
 
+    @pytest.mark.xfail(reason="fetch_last disabled", strict=True, raises=NeptuneUnsupportedFunctionalityException)
     def test_assign_series(self):
         with init_run(mode="debug", flush_period=0.5) as exp:
             exp["some/num/val"].assign(FloatSeriesVal([1, 2, 0, 10]))
@@ -248,6 +250,7 @@ class TestSeries:
             assert exp["some"]["num"]["val"].fetch_last() == 5
             assert exp["some"]["str"]["val"].fetch_last() == "other 3"
 
+    @pytest.mark.xfail(reason="fetch_last disabled", strict=True, raises=NeptuneUnsupportedFunctionalityException)
     def test_log(self):
         with init_run(mode="debug", flush_period=0.5) as exp:
             exp["some/num/val"].log(5)
@@ -258,12 +261,14 @@ class TestSeries:
             assert exp["some"]["str"]["val"].fetch_last() == "some text"
             assert isinstance(exp.get_structure()["some"]["img"]["val"], FileSeries)
 
+    @pytest.mark.xfail(reason="fetch_last disabled", strict=True, raises=NeptuneUnsupportedFunctionalityException)
     def test_log_dict(self):
         with init_run(mode="debug", flush_period=0.5) as exp:
             dict_value = str({"key-a": "value-a", "key-b": "value-b"})
             exp["some/num/val"].log(dict_value)
             assert exp["some"]["num"]["val"].fetch_last() == str(dict_value)
 
+    @pytest.mark.xfail(reason="fetch_last disabled", strict=True, raises=NeptuneUnsupportedFunctionalityException)
     def test_append(self):
         with init_run(mode="debug", flush_period=0.5) as exp:
             exp["some/num/val"].append(5)
@@ -274,6 +279,7 @@ class TestSeries:
             assert exp["some"]["str"]["val"].fetch_last() == "some text"
             assert isinstance(exp.get_structure()["some"]["img"]["val"], FileSeries)
 
+    @pytest.mark.xfail(reason="fetch_last disabled", strict=True, raises=NeptuneUnsupportedFunctionalityException)
     def test_append_dict(self):
         with init_run(mode="debug", flush_period=0.5) as exp:
             dict_value = {"key-a": "value-a", "key-b": "value-b"}
@@ -281,6 +287,7 @@ class TestSeries:
             assert exp["some"]["num"]["val"]["key-a"].fetch_last() == "value-a"
             assert exp["some"]["num"]["val"]["key-b"].fetch_last() == "value-b"
 
+    @pytest.mark.xfail(reason="fetch_last disabled", strict=True, raises=NeptuneUnsupportedFunctionalityException)
     def test_append_complex_input(self):
         with init_run(mode="debug", flush_period=0.5) as exp:
             exp["train/dictOfDicts"].append(
@@ -294,6 +301,7 @@ class TestSeries:
             assert exp["train"]["dictOfDicts"]["key-b"]["ba"].fetch_last() == 33
             assert exp["train"]["dictOfDicts"]["key-b"]["bb"].fetch_last() == 44
 
+    @pytest.mark.xfail(reason="fetch_last disabled", strict=True, raises=NeptuneUnsupportedFunctionalityException)
     def test_log_many_values(self):
         with init_run(mode="debug", flush_period=0.5) as exp:
             exp["some/num/val"].log([5, 10, 15])
@@ -331,6 +339,7 @@ class TestSeries:
             with assert_unsupported_warning():
                 exp["some/list-custom-obj/val"].append([Obj(), Obj()])
 
+    @pytest.mark.xfail(reason="fetch_last disabled", strict=True, raises=NeptuneUnsupportedFunctionalityException)
     def test_extend(self):
         with init_run(mode="debug", flush_period=0.5) as exp:
             exp["some/num/val"].extend([5, 7])
@@ -345,6 +354,7 @@ class TestSeries:
             assert exp["some"]["str"]["val"].fetch_last() == "text"
             assert isinstance(exp.get_structure()["some"]["img"]["val"], FileSeries)
 
+    @pytest.mark.xfail(reason="fetch_last disabled", strict=True, raises=NeptuneUnsupportedFunctionalityException)
     def test_extend_dict(self):
         with init_run(mode="debug", flush_period=0.5) as exp:
             dict_value = {"key-a": ["value-a", "value-aa"], "key-b": ["value-b", "value-bb"], "key-c": ["ccc"]}
@@ -353,6 +363,7 @@ class TestSeries:
             assert exp["some"]["num"]["val"]["key-b"].fetch_last() == "value-bb"
             assert exp["some"]["num"]["val"]["key-c"].fetch_last() == "ccc"
 
+    @pytest.mark.xfail(reason="fetch_last disabled", strict=True, raises=NeptuneUnsupportedFunctionalityException)
     def test_extend_nested(self):
         """We expect that we are able to log arbitrary tre structure"""
         with init_run(mode="debug", flush_period=0.5) as exp:
@@ -395,6 +406,7 @@ class TestSeries:
                     values={"list1": [1, 2, 3], "list2": [10, 20, 30]}, timestamps=[time.time()] * 2
                 )
 
+    @pytest.mark.xfail(reason="fetch_last disabled", strict=True, raises=NeptuneUnsupportedFunctionalityException)
     def test_log_value_errors(self):
         with init_run(mode="debug", flush_period=0.5) as exp:
             img = FileVal.as_image(PIL.Image.new("RGB", (60, 30), color="red"))
@@ -434,6 +446,7 @@ class TestSet:
         os.environ[PROJECT_ENV_NAME] = "organization/project"
         os.environ[API_TOKEN_ENV_NAME] = ANONYMOUS_API_TOKEN
 
+    @pytest.mark.xfail(reason="fetch_last disabled", strict=True, raises=NeptuneUnsupportedFunctionalityException)
     def test_append_errors(self):
         with init_run(mode="debug", flush_period=0.5) as exp:
             img = FileVal.as_image(PIL.Image.new("RGB", (60, 30), color="red"))
@@ -489,6 +502,7 @@ class TestNamespace:
         os.environ[PROJECT_ENV_NAME] = "organization/project"
         os.environ[API_TOKEN_ENV_NAME] = ANONYMOUS_API_TOKEN
 
+    @pytest.mark.xfail(reason="fetch_last disabled", strict=True, raises=NeptuneUnsupportedFunctionalityException)
     def test_assign_dict(self):
         with init_run(mode="debug", flush_period=0.5) as exp:
             exp["params"] = {
@@ -543,6 +557,9 @@ class TestNamespace:
             with pytest.raises(TypeError):
                 exp["some"].assign(NamespaceVal({"namespace/sub-namespace/val1": {"tagA", "tagB"}}))
 
+    @pytest.mark.xfail(
+        reason="File functionality disabled", strict=True, raises=NeptuneUnsupportedFunctionalityException
+    )
     def test_fetch_dict(self):
         now = datetime.now()
 
@@ -673,6 +690,7 @@ class TestOtherBehaviour:
             with pytest.raises(AttributeError):
                 exp["var"].something()
 
+    @pytest.mark.xfail(reason="fetch_last disabled", strict=True, raises=NeptuneUnsupportedFunctionalityException)
     def test_float_like_types(self):
         with init_run(mode="debug", flush_period=0.5) as exp:
             exp.define("attr1", self.FloatLike(5))
@@ -696,6 +714,7 @@ class TestOtherBehaviour:
             with pytest.raises(ValueError):
                 exp["attr3"].log([4, "234a"])
 
+    @pytest.mark.xfail(reason="fetch_last disabled", strict=True, raises=NeptuneUnsupportedFunctionalityException)
     def test_append_float_like_types(self):
         with init_run(mode="debug", flush_period=0.5) as exp:
             exp["attr"].append(self.FloatLike(34))
@@ -709,6 +728,7 @@ class TestOtherBehaviour:
                 exp["attr"].append(4)
                 exp["attr"].append("234a")
 
+    @pytest.mark.xfail(reason="fetch_last disabled", strict=True, raises=NeptuneUnsupportedFunctionalityException)
     def test_extend_float_like_types(self):
         with init_run(mode="debug", flush_period=0.5) as exp:
             exp["attr"].extend([self.FloatLike(34)])
@@ -718,6 +738,7 @@ class TestOtherBehaviour:
             with pytest.raises(ValueError):
                 exp["attr"].extend([4, "234a"])
 
+    @pytest.mark.xfail(reason="fetch_last disabled", strict=True, raises=NeptuneUnsupportedFunctionalityException)
     def test_assign_dict(self):
         with init_run(mode="debug", flush_period=0.5) as exp:
             exp["params"] = {

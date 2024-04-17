@@ -21,9 +21,10 @@ from typing import (
     Union,
 )
 
+from neptune.api.models import FloatSeriesValues
 from neptune.attributes.series.fetchable_series import FetchableSeries
 from neptune.attributes.series.series import Series
-from neptune.internal.backends.api_model import FloatSeriesValues
+from neptune.exceptions import NeptuneUnsupportedFunctionalityException
 from neptune.internal.operation import (
     ClearFloatLog,
     ConfigFloatSeries,
@@ -67,6 +68,7 @@ class FloatSeries(
         return isinstance(value, FloatSeriesVal)
 
     def fetch_last(self) -> float:
+        raise NeptuneUnsupportedFunctionalityException
         val = self._backend.get_float_series_attribute(self._container_id, self._container_type, self._path)
         return val.last
 

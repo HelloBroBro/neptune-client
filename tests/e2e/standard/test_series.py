@@ -20,6 +20,7 @@ from contextlib import contextmanager
 import pytest
 from PIL import Image
 
+from neptune.exceptions import NeptuneUnsupportedFunctionalityException
 from neptune.objects import NeptuneObject
 from neptune.types import (
     FileSeries,
@@ -30,6 +31,7 @@ from tests.e2e.base import (
     AVAILABLE_CONTAINERS,
     BaseE2ETest,
     fake,
+    make_parameters,
 )
 from tests.e2e.utils import (
     generate_image,
@@ -37,9 +39,16 @@ from tests.e2e.utils import (
     tmp_context,
 )
 
-BASIC_SERIES_TYPES = ["strings", "floats", "files"]
+BASIC_SERIES_TYPES = (
+    make_parameters(["strings", "floats", "files"])
+    .xfail("files", reason="File funcitonality disabled", raises=NeptuneUnsupportedFunctionalityException)
+    .eval()
+)
 
 
+@pytest.mark.xfail(
+    reason="fetch_last and download_last disabled", strict=True, raises=NeptuneUnsupportedFunctionalityException
+)
 class TestSeries(BaseE2ETest):
     @pytest.mark.parametrize("series_type", BASIC_SERIES_TYPES)
     @pytest.mark.parametrize("container", AVAILABLE_CONTAINERS, indirect=True)
@@ -77,6 +86,9 @@ class TestSeries(BaseE2ETest):
         with self.run_then_assert(container, "strings") as (namespace, values, steps, timestamps):
             namespace.assign(StringSeries(values=values, steps=steps, timestamps=timestamps))
 
+    @pytest.mark.xfail(
+        reason="File funcitonality disabled", strict=True, raises=NeptuneUnsupportedFunctionalityException
+    )
     @pytest.mark.parametrize("container", AVAILABLE_CONTAINERS, indirect=True)
     def test_file_series_type_assign(self, container: NeptuneObject):
         with self.run_then_assert(container, "files") as (namespace, values, steps, timestamps):

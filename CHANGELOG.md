@@ -18,7 +18,9 @@
 - Removed `boto3` from requirements ([#1743](https://github.com/neptune-ai/neptune-client/pull/1743))
 - Disabled `StringSet` `remove` and `clear` methods ([#1732](https://github.com/neptune-ai/neptune-client/pull/1732))
 - Disable `fetch_last` and `download_last` ([#1731](https://github.com/neptune-ai/neptune-client/pull/1731))
+- Removed `pillow` from requirements ([#1745](https://github.com/neptune-ai/neptune-client/pull/1745))
 - Disabled file related functionality ([#1726](https://github.com/neptune-ai/neptune-client/pull/1726))
+- Disabled file logging ([#1733](https://github.com/neptune-ai/neptune-client/pull/1733))
 
 ### Changes
 - Stop sending `X-Neptune-LegacyClient` header ([#1715](https://github.com/neptune-ai/neptune-client/pull/1715))
@@ -26,6 +28,7 @@
 - Fields DTO conversion reworked ([#1722](https://github.com/neptune-ai/neptune-client/pull/1722))
 - Added support for Protocol Buffers ([#1728](https://github.com/neptune-ai/neptune-client/pull/1728))
 - Series values DTO conversion reworked with protocol buffer support ([#1738](https://github.com/neptune-ai/neptune-client/pull/1738))
+- Series values fetching reworked with protocol buffer support ([#1744](https://github.com/neptune-ai/neptune-client/pull/1744))
 
 ### Fixes
 - Fixed `tqdm.notebook` import only in Notebook environment ([#1716](https://github.com/neptune-ai/neptune-client/pull/1716))

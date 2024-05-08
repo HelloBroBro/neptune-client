@@ -22,6 +22,9 @@
 - Disabled file related functionality ([#1726](https://github.com/neptune-ai/neptune-client/pull/1726))
 - Disabled file logging ([#1733](https://github.com/neptune-ai/neptune-client/pull/1733))
 
+### Features
+- Added auto-generation of `custom_run_id` if it's not provided ([#1762](https://github.com/neptune-ai/neptune-client/pull/1762))
+
 ### Changes
 - Stop sending `X-Neptune-LegacyClient` header ([#1715](https://github.com/neptune-ai/neptune-client/pull/1715))
 - Use `tqdm.auto` ([#1717](https://github.com/neptune-ai/neptune-client/pull/1717))
@@ -32,6 +35,8 @@
 - Added support for enhanced field definitions querying ([#1751](https://github.com/neptune-ai/neptune-client/pull/1751))
 - Added initial operations to the `core.operations` package ([#1759](https://github.com/neptune-ai/neptune-client/pull/1759))
 - Move some `OperationProcessor` implementations to `neptune.core.operation_processors` ([#1760](https://github.com/neptune-ai/neptune-client/pull/1760))
+- Changed handling of too long custom run id ([#1761](https://github.com/neptune-ai/neptune-client/pull/1761))
+- Skip tests that require `GitPython` when not installed ([#1752](https://github.com/neptune-ai/neptune-client/pull/1752))
 
 ### Fixes
 - Fixed `tqdm.notebook` import only in Notebook environment ([#1716](https://github.com/neptune-ai/neptune-client/pull/1716))

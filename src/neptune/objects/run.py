@@ -17,6 +17,7 @@ __all__ = ["Run"]
 
 import os
 import threading
+import uuid
 from platform import node as get_hostname
 from typing import (
     TYPE_CHECKING,
@@ -47,6 +48,7 @@ from neptune.envs import (
 from neptune.exceptions import (
     InactiveRunException,
     NeedExistingRunForReadOnlyMode,
+    NeptuneException,
     NeptuneRunResumeAndCustomIdCollision,
 )
 from neptune.internal.backends.api_model import ApiExperiment
@@ -80,7 +82,10 @@ from neptune.internal.utils.git import (
     track_uncommitted_changes,
 )
 from neptune.internal.utils.hashing import generate_hash
-from neptune.internal.utils.limits import custom_run_id_exceeds_length
+from neptune.internal.utils.limits import (
+    CUSTOM_RUN_ID_LENGTH,
+    custom_run_id_exceeds_length,
+)
 from neptune.internal.utils.ping_background_job import PingBackgroundJob
 from neptune.internal.utils.runningmode import (
     in_interactive,
@@ -402,6 +407,9 @@ class Run(NeptuneObject):
         if mode == Mode.OFFLINE or mode == Mode.DEBUG:
             project = OFFLINE_PROJECT_QUALIFIED_NAME
 
+        if self._custom_run_id is None and mode != Mode.READ_ONLY:
+            self._custom_run_id = str(uuid.uuid4())
+
         super().__init__(
             project=project,
             api_token=api_token,
@@ -430,16 +438,15 @@ class Run(NeptuneObject):
 
             git_info = to_git_info(git_ref=self._git_ref)
 
-            custom_run_id = self._custom_run_id
             if custom_run_id_exceeds_length(self._custom_run_id):
-                custom_run_id = None
+                raise NeptuneException(f"Parameter `custom_run_id` exceeds {CUSTOM_RUN_ID_LENGTH} characters.")
 
             notebook_id, checkpoint_id = create_notebook_checkpoint(backend=self._backend)
 
             return self._backend.create_run(
                 project_id=self._project_api_object.id,
                 git_info=git_info,
-                custom_run_id=custom_run_id,
+                custom_run_id=self._custom_run_id,
                 notebook_id=notebook_id,
                 checkpoint_id=checkpoint_id,
             )

@@ -50,7 +50,6 @@ from neptune.exceptions import (
 )
 from neptune.internal.backends.api_model import ApiExperiment
 from neptune.internal.container_type import ContainerType
-from neptune.internal.hardware.hardware_metric_reporting_job import HardwareMetricReportingJob
 from neptune.internal.id_formats import QualifiedName
 from neptune.internal.init.parameters import (
     ASYNC_LAG_THRESHOLD,
@@ -456,9 +455,6 @@ class Run(NeptuneObject):
         if self._capture_stderr:
             background_jobs.append(StderrCaptureBackgroundJob(attribute_name=self._stderr_path))
 
-        if self._capture_hardware_metrics:
-            background_jobs.append(HardwareMetricReportingJob(attribute_namespace=self._monitoring_namespace))
-
         if self._capture_traceback:
             background_jobs.append(
                 TracebackJob(path=f"{self._monitoring_namespace}/traceback", fail_on_exception=self._fail_on_exception)
@@ -543,15 +539,6 @@ class Run(NeptuneObject):
     def _raise_if_stopped(self):
         if self._state == ContainerState.STOPPED:
             raise InactiveRunException(label=self._sys_id)
-
-    def get_url(self) -> str:
-        """Returns the URL that can be accessed within the browser"""
-        return self._backend.get_run_url(
-            run_id=self._id,
-            workspace=self._workspace,
-            project_name=self._project_name,
-            sys_id=self._sys_id,
-        )
 
 
 def capture_only_if_non_interactive(mode) -> bool:

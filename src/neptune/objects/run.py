@@ -44,13 +44,9 @@ from neptune.envs import (
 )
 from neptune.exceptions import (
     InactiveRunException,
-    NeedExistingRunForReadOnlyMode,
-    NeptuneException,
     NeptuneRunResumeAndCustomIdCollision,
 )
-from neptune.internal.backends.api_model import ApiExperiment
 from neptune.internal.container_type import ContainerType
-from neptune.internal.id_formats import QualifiedName
 from neptune.internal.parameters import (
     ASYNC_LAG_THRESHOLD,
     ASYNC_NO_PROGRESS_THRESHOLD,
@@ -71,15 +67,7 @@ from neptune.internal.utils.dependency_tracking import (
     FileDependenciesStrategy,
     InferDependenciesStrategy,
 )
-from neptune.internal.utils.git import (
-    to_git_info,
-    track_uncommitted_changes,
-)
 from neptune.internal.utils.hashing import generate_hash
-from neptune.internal.utils.limits import (
-    CUSTOM_RUN_ID_LENGTH,
-    custom_run_id_exceeds_length,
-)
 from neptune.internal.utils.ping_background_job import PingBackgroundJob
 from neptune.internal.utils.runningmode import (
     in_interactive,
@@ -96,11 +84,7 @@ from neptune.objects.neptune_object import (
     NeptuneObject,
     NeptuneObjectCallback,
 )
-from neptune.types import (
-    GitRef,
-    StringSeries,
-)
-from neptune.types.atoms.git_ref import GitRefDisabled
+from neptune.types import StringSeries
 from neptune.types.mode import Mode
 
 if TYPE_CHECKING:
@@ -135,7 +119,7 @@ class Run(NeptuneObject):
     Examples of metadata you can log: metrics, losses, scores, artifact versions, images, predictions,
     model weights, parameters, checkpoints, and interactive visualizations.
 
-    By default, the run automatically tracks hardware consumption, stdout/stderr, source code, and Git information.
+    By default, the run automatically tracks hardware consumption, stdout/stderr, source code.
     If you're using Neptune in an interactive session, however, some background monitoring needs to be enabled
     explicitly.
 
@@ -195,10 +179,6 @@ class Run(NeptuneObject):
         capture_traceback: Whether to log the traceback of the run in case of an exception.
             The tracked metadata is stored in the "<monitoring_namespace>/traceback" namespace (see the
             `monitoring_namespace` parameter).
-        git_ref: GitRef object containing information about the Git repository path.
-            If None, Neptune looks for a repository in the path of the script that is executed.
-            To specify a different location, set to GitRef(repository_path="path/to/repo").
-            To turn off Git tracking for the run, set to False or GitRef.DISABLED.
         dependencies: If you pass `"infer"`, Neptune logs dependencies installed in the current environment.
             You can also pass a path to your dependency file directly.
             If left empty, no dependencies are tracked.
@@ -238,12 +218,11 @@ class Run(NeptuneObject):
         >>> # Or initialize with the constructor
         ... run = Run(project="ml-team/classification")
 
-        >>> # Create a run with a name and description, with no sources files or Git info tracked:
+        >>> # Create a run with a name and description, with no sources files:
         >>> run = neptune.init_run(
         ...     name="neural-net-mnist",
         ...     description="neural net trained on MNIST",
-        ...     source_files=[],
-        ...     git_ref=False,
+        ...     source_files=[]
         ... )
 
         >>> # Log all .py files from all subdirectories, excluding hidden files
@@ -261,7 +240,6 @@ class Run(NeptuneObject):
         ...     source_files=["training_with_pytorch.py", "net.py"],
         ...     dependencies="infer",
         ...     capture_stderr=False,
-        ...     git_ref=GitRef(repository_path="/Users/Jackie/repos/cls_project"),
         ... )
 
         Connecting to an existing run:
@@ -318,7 +296,6 @@ class Run(NeptuneObject):
         flush_period: float = DEFAULT_FLUSH_PERIOD,
         proxies: Optional[dict] = None,
         capture_traceback: bool = True,
-        git_ref: Optional[Union[GitRef, GitRefDisabled, bool]] = None,
         dependencies: Optional[Union[str, os.PathLike]] = None,
         async_lag_callback: Optional[NeptuneObjectCallback] = None,
         async_lag_threshold: float = ASYNC_LAG_THRESHOLD,
@@ -340,7 +317,6 @@ class Run(NeptuneObject):
         verify_type("fail_on_exception", fail_on_exception, bool)
         verify_type("monitoring_namespace", monitoring_namespace, (str, type(None)))
         verify_type("capture_traceback", capture_traceback, bool)
-        verify_type("git_ref", git_ref, (GitRef, str, bool, type(None)))
         verify_type("dependencies", dependencies, (str, os.PathLike, type(None)))
 
         if tags is not None:
@@ -366,10 +342,6 @@ class Run(NeptuneObject):
         self._fail_on_exception: bool = fail_on_exception
         self._capture_traceback: bool = capture_traceback
 
-        if type(git_ref) is bool:
-            git_ref = GitRef() if git_ref else GitRef.DISABLED
-
-        self._git_ref: Optional[GitRef, GitRefDisabled] = git_ref or GitRef()
         self._dependencies: Optional[str, os.PathLike] = dependencies
 
         self._monitoring_namespace: str = (
@@ -405,6 +377,7 @@ class Run(NeptuneObject):
             self._custom_run_id = str(uuid.uuid4())
 
         super().__init__(
+            custom_id=self._custom_run_id,
             project=project,
             api_token=api_token,
             mode=mode,
@@ -416,36 +389,11 @@ class Run(NeptuneObject):
             async_no_progress_threshold=async_no_progress_threshold,
         )
 
-    def _get_or_create_api_object(self) -> ApiExperiment:
-        project_workspace = self._project_api_object.workspace
-        project_name = self._project_api_object.name
-        project_qualified_name = f"{project_workspace}/{project_name}"
-
-        if self._with_id:
-            return self._backend.get_metadata_container(
-                container_id=QualifiedName(project_qualified_name + "/" + self._with_id),
-                expected_container_type=Run.container_type,
-            )
-        else:
-            if self._mode == Mode.READ_ONLY:
-                raise NeedExistingRunForReadOnlyMode()
-
-            git_info = to_git_info(git_ref=self._git_ref)
-
-            if custom_run_id_exceeds_length(self._custom_run_id):
-                raise NeptuneException(f"Parameter `custom_run_id` exceeds {CUSTOM_RUN_ID_LENGTH} characters.")
-
-            return self._backend.create_run(
-                project_id=self._project_api_object.id,
-                git_info=git_info,
-                custom_run_id=self._custom_run_id,
-            )
-
     @temporarily_disabled
     def _get_background_jobs(self) -> List["BackgroundJob"]:
         background_jobs = [PingBackgroundJob()]
 
-        websockets_factory = self._backend.websockets_factory(self._project_api_object.id, self._id)
+        websockets_factory = self._backend.websockets_factory(self._project_api_object.id, self._custom_id)
         if websockets_factory:
             background_jobs.append(WebsocketSignalsBackgroundJob(websockets_factory))
 
@@ -519,26 +467,13 @@ class Run(NeptuneObject):
                     exception=NeptuneWarning,
                 )
 
-        try:
-            track_uncommitted_changes(
-                git_ref=self._git_ref,
-                run=self,
-            )
-        except Exception as e:
-            warn_once(
-                "An exception occurred in tracking uncommitted changes."
-                "Skipping upload of patch files."
-                "Exception: " + str(e),
-                exception=NeptuneWarning,
-            )
-
     @property
     def monitoring_namespace(self) -> str:
         return self._monitoring_namespace
 
     def _raise_if_stopped(self):
         if self._state == ContainerState.STOPPED:
-            raise InactiveRunException(label=self._sys_id)
+            raise InactiveRunException(label=self._custom_id)
 
 
 def capture_only_if_non_interactive(mode) -> bool:

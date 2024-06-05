@@ -3,11 +3,6 @@ name: e2e
 on:
   workflow_call:
   workflow_dispatch:
-  schedule:
-    - cron: "0 4 * * *" # Run every day at arbitrary time (4:00 AM UTC)
-  push:
-    branches:
-      - master
 
 env:
   WORKSPACE_NAME: ${{ vars.E2E_WORKSPACE_NAME }}
@@ -43,7 +38,7 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
           os: ${{ matrix.os }}
-          module: "not s3 and not integrations and not management"
+          module: "not integrations and not management"
           name: "standard"
           report_job: 'standard (${{ matrix.os }} - py${{ matrix.python-version }})'
           codecov-token: ${{ secrets.CODECOV_TOKEN }}
@@ -90,3 +85,4 @@ jobs:
         uses: ./.github/actions/workflow-notify-v2
         with:
           slack-webhook: ${{ secrets.E2E_REGULAR_SLACK_WEBHOOK }}
+          neptune-ref: ${{ github.ref }}
